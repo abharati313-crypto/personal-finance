@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign-Up</title>
+
+    <style>
+        body {
+            background-image: url("financeLoginImage.jpg");
+            background-position: center;
+            background-size: cover;
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .page-title {
+            text-align: center; 
+            margin: 20px 0; 
+            font-size: 28px; 
+            color: rgb(237, 237, 243); 
+        }
+
+        .loginPage { display: flex; justify-content: center; }
+
+        form {
+            background-color:rgb(220, 225, 244);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            width: 320px;
+        }
+
+        label { display: block; margin: 10px 0 5px; font-weight: bold; }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgb(77, 71, 71);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: rgb(19, 19, 241);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2 class="page-title">New User Sign-Up</h2>
+
+    <div class="loginPage">
+        <form id="signupForm">
+            <label>First Name</label>
+            <input type="text" id="first_name" placeholder="Enter First name.." required>
+
+            <label>Last Name</label>
+            <input type="text" id="last_name" placeholder="Enter Last name..">
+
+            <label>E-mail</label>
+            <input type="email" id="email" placeholder="Enter Email.." required>
+
+            <label>Password</label>
+            <input type="password" id="password" placeholder="Enter Password.." required>
+
+            <button type="submit">Sign-Up</button>
+        </form>
+    </div>
+
+    <script>
+const API_URL = "http://127.0.0.1:8000";
+
+document.getElementById("signupForm").addEventListener("submit", e => {
+    e.preventDefault();
+
+    const payload = {
+        first_name: document.getElementById("first_name").value,
+        last_name: document.getElementById("last_name").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value
+    };
+
+    fetch(`${API_URL}/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(async res => {
+        if (!res.ok) {
+            const err = await res.json();
+            alert(err.detail);
+            return;
+        }
+        return res.json();
+    })
+    .then(data => {
+        alert(data.message);
+
+        // 🔥 SAVE user_id so transactions work
+        localStorage.setItem("user_id", data.user_id);
+
+        // Redirect to dashboard
+        window.location.href = "dashboard.html";
+    })
+    .catch(err => console.log(err));
+});
+</script>
+
+
+
+</body>
+</html>

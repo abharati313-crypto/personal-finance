@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Finance Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+  --bg: white;
+  --card:#dfdff3;
+  --accent:#2563eb;
+  --muted:#6b7280;
+  --radius:8px;
+  --gap:14px;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:#111;padding:10px 16px}
+
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:12px 8px
+}
+.left-header{display:flex;align-items:center;gap:12px}
+.logo-box{
+  width:44px;height:44px;border-radius:8px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800
+}
+.brand{font-weight:700;font-size:1.1rem}
+.right-header{color:var(--muted);font-size:0.95rem}
+
+.stats-row{
+  display:flex;gap:12px;margin-top:8px;margin-bottom:12px
+}
+.stat{
+  background:var(--card);padding:12px;border-radius:var(--radius);
+  flex:1;border:1px solid #eef2f7
+}
+.label{color:var(--muted);font-size:0.85rem}
+.value{font-weight:800;font-size:1.15rem;margin-top:6px}
+
+.main{display:flex;gap:12px;align-items:flex-start}
+.left{flex:1}
+.right{width:360px}
+
+.card{
+  background:var(--card);padding:12px;border-radius:var(--radius);
+  border:1px solid #eef2f7
+}
+.card h3{margin-bottom:8px;font-size:1rem}
+
+.search{
+  width:100%;padding:8px;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:8px
+}
+
+.tx-list{max-height:300px;overflow:auto}
+.tx{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px;border-radius:8px;border:1px solid #f0f4f8;
+  margin-bottom:8px;background:#fff
+}
+.tx-left{display:flex;gap:10px;align-items:center}
+
+.badge{
+  padding:6px 8px;border-radius:8px;font-weight:700;font-size:0.82rem
+}
+.income{background:#e6f7ee;color:#087f4b}
+.expense{background:#fff0f0;color:#b93a3a}
+
+.tx-title{font-weight:700}
+.tx-meta{color:var(--muted);font-size:0.85rem}
+
+.btn{
+  background:var(--accent);color:#fff;padding:8px 10px;border:none;
+  border-radius:8px;cursor:pointer;font-weight:700
+}
+.btn.ghost{
+  background:transparent;border:1px solid #dbeeff;color:var(--accent)
+}
+
+.form-row{display:flex;gap:8px;margin-top:8px}
+.form-row > div{flex:1}
+
+input, select{
+  width:100%;padding:8px;border-radius:8px;border:1px solid #e5e7eb;
+  font-size:0.95rem;
+}
+
+.chart-section{display:flex;gap:12px;margin-top:20px}
+.chart-card{
+  flex:1;background:var(--card);padding:12px;border-radius:var(--radius);
+  border:1px solid #eef2f7;height:300px
+}
+
+footer{
+  margin-top:16px;color:var(--muted);font-size:0.85rem;text-align:left
+}
+
+@media(max-width:900px){
+  .main{flex-direction:column}
+  .right{width:100%}
+  .chart-section{flex-direction:column}
+}
+</style>
+</head>
+
+
+
+<body>
+
+<header>
+  <div class="left-header">
+    <div class="logo-box">PG</div>
+    <div>
+      <div class="brand">Personal Guide</div>
+      <div style="color:var(--muted);font-size:0.9rem">Personal Finance Dashboard</div>
+    </div>
+  </div>
+  <div class="right-header" id="userStatus"><strong>Welcome</strong></div>
+  <a href="loginPro.html" class="back-link">Logout</a>
+</header>
+
+
+<div class="stats-row">
+  <div class="stat">
+    <div class="label">Balance</div>
+    <div id="balance" class="value">₹ 0</div>
+  </div>
+  <div class="stat">
+    <div class="label">Income</div>
+    <div id="income" class="value">₹ 0</div>
+  </div>
+  <div class="stat">
+    <div class="label">Expense</div>
+    <div id="expense" class="value">₹ 0</div>
+  </div>
+</div>
+
+
+<div class="main">
+
+  <div class="left">
+    <div class="card">
+      <h3>Transactions</h3>
+
+      <input id="search" class="search" type="text" placeholder="Search category or note...">
+
+      <div id="txList" class="tx-list"></div>
+    </div>
+  </div>
+
+
+  <aside class="right">
+    <div class="card">
+      <h3>Add / Edit Transaction</h3>
+
+      <form id="txForm">
+        <label>Date</label>
+        <input id="date" type="date" required>
+
+        <label>Type</label>
+        <select id="type">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+
+        <div class="form-row">
+          <div>
+            <label>Amount</label>
+            <input id="amount" type="number" min="0" step="0.01" required>
+          </div>
+          <div>
+            <label>Category</label>
+            <input id="category" type="text" placeholder="Salary, Food, Rent" required>
+          </div>
+        </div>
+
+        <label>Note</label>
+        <input id="note" type="text" placeholder="Any note...">
+
+        <button class="btn" type="submit">Save</button>
+        <button class="btn ghost" type="button" id="cancelEdit">Reset</button>
+      </form>
+    </div>
+  </aside>
+
+</div>
+
+
+
+<div class="chart-section">
+  <div class="chart-card">
+    <h3>Daily Report</h3>
+    <canvas id="dailyChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>Monthly Report</h3>
+    <canvas id="monthlyChart"></canvas>
+  </div>
+</div>
+
+<footer>Personal Finance Dashboard</footer>
+
+
+
+<script>
+const API_URL = "http://127.0.0.1:8000";
+
+// ---------------- CHECK LOGIN ----------------
+const user_id = localStorage.getItem("user_id");
+if (!user_id) {
+    alert("Please login first!");
+    window.location.href = "loginPro.html";
+}
+
+
+
+// ---------------- FETCH TRANSACTIONS ----------------
+function fetchTransactions() {
+    fetch(`${API_URL}/history/${user_id}`)
+        .then(res => res.json())
+        .then(data => renderTransactions(data))
+        .catch(err => console.error("Fetch error:", err));
+}
+
+
+
+// ---------------- RENDER TRANSACTIONS ----------------
+function renderTransactions(transactions) {
+
+    let income = 0, expense = 0;
+    const txListEl = document.getElementById("txList");
+    txListEl.innerHTML = "";
+
+    transactions.forEach(t => {
+
+        if (t.type === "income") income += t.amount;
+        else expense += t.amount;
+
+        txListEl.innerHTML += `
+            <div class="tx">
+                <div class="tx-left">
+                    <div class="badge ${t.type}">
+                        ${t.type === "income" ? "+ Income" : "- Expense"}
+                    </div>
+                    <div>
+                        <div class="tx-title">${t.category} • ${new Date(t.date).toLocaleDateString()}</div>
+                        <div class="tx-meta">${t.note || ""}</div>
+                    </div>
+                </div>
+                <div style="font-weight:800;text-align:right">
+                    ${t.type === "expense" ? "-" : ""}₹ ${t.amount}
+                </div>
+            </div>
+        `;
+    });
+
+    document.getElementById("income").innerText = "₹ " + income;
+    document.getElementById("expense").innerText = "₹ " + expense;
+    document.getElementById("balance").innerText = "₹ " + (income - expense);
+
+    renderCharts(transactions);
+}
+
+
+
+// ---------------- ADD TRANSACTION ----------------
+document.getElementById("txForm").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    const data = {
+        user_id: user_id,
+        type: document.getElementById("type").value,
+        category: document.getElementById("category").value,
+        amount: parseFloat(document.getElementById("amount").value),
+        date: document.getElementById("date").value,
+        note: document.getElementById("note").value
+    };
+
+    fetch(`${API_URL}/add_transaction`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(response => {
+        alert("Saved!");
+        document.getElementById("txForm").reset();
+        fetchTransactions();
+    })
+    .catch(err => console.error(err));
+});
+
+
+
+// ---------------- CHARTS ----------------
+function renderCharts(transactions) {
+
+    let dailyIncome = {}, dailyExpense = {};
+    let monthlyIncome = {}, monthlyExpense = {};
+
+    transactions.forEach(t => {
+        const d = new Date(t.date);
+        const day = d.toLocaleDateString("en-US",{weekday:"short"});
+        const month = d.toLocaleDateString("en-US",{month:"short"});
+
+        if (!dailyIncome[day]) dailyIncome[day] = 0;
+        if (!dailyExpense[day]) dailyExpense[day] = 0;
+        if (!monthlyIncome[month]) monthlyIncome[month] = 0;
+        if (!monthlyExpense[month]) monthlyExpense[month] = 0;
+
+        if (t.type === "income") {
+            dailyIncome[day] += t.amount;
+            monthlyIncome[month] += t.amount;
+        } else {
+            dailyExpense[day] += t.amount;
+            monthlyExpense[month] += t.amount;
+        }
+    });
+
+    new Chart(document.getElementById("dailyChart"), {
+        type: "bar",
+        data: {
+            labels: Object.keys(dailyIncome),
+            datasets: [
+                { label: "Income", data: Object.values(dailyIncome), backgroundColor: "#3b82f6" },
+                { label: "Expense", data: Object.values(dailyExpense), backgroundColor: "#ef4444" }
+            ]
+        }
+    });
+
+    new Chart(document.getElementById("monthlyChart"), {
+        type: "bar",
+        data: {
+            labels: Object.keys(monthlyIncome),
+            datasets: [
+                { label: "Income", data: Object.values(monthlyIncome), backgroundColor: "#3b82f6" },
+                { label: "Expense", data: Object.values(monthlyExpense), backgroundColor: "#ef4444" }
+            ]
+        }
+    });
+}
+
+
+
+// ---------------- INITIAL LOAD ----------------
+fetchTransactions();
+</script>
+
+</body>
+</html>
